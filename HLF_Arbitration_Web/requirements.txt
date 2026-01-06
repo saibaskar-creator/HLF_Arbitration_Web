@@ -1,0 +1,5 @@
+google-cloud-aiplatform
+psycopg2-binary
+tenacity
+pandas
+openpyxl

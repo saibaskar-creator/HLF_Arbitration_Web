@@ -1,0 +1,8 @@
+Agreement API Error: 404 Publisher Model `projects/arbitration-app-e16ce/locations/us-central1/publishers/google/models/gemini-3-flash-preview` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+Agreement API Error: 404 Publisher Model `projects/arbitration-app-e16ce/locations/us-central1/publishers/google/models/gemini-3-flash-preview` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
+❌ JSON Parse Error: Unterminated string starting at: line 1 column 134 (char 133)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 123 (char 122)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 120 (char 119)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 83 (char 82)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 163 (char 162)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 83 (char 82)

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+google-cloud-aiplatform
+google-auth
+psycopg2-binary
+tenacity
+pandas
+openpyxl
+python-dotenv

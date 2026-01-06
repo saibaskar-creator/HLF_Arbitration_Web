@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\SaibaskarP\HLF_Arbitration_Core\HLF_Arbitration_Web\backend\api\routes.py", line 88, in upload_and_extract
+    raise HTTPException(status_code=400, detail="Failed to extract data from Agreement PDF")
+fastapi.exceptions.HTTPException: 400: Failed to extract data from Agreement PDF
