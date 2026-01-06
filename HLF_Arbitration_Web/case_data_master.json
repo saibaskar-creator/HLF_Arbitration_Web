@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "generated_at": "2026-01-03 19:39:22",
+    "case_id": "HLF-ARB-AUTO-001"
+  },
+  "borrower": {
+    "name": "Bimla yadav",
+    "relationship": "w/o"
+  },
+  "guarantor": {
+    "name": "Ramesh Chand Yadav",
+    "relationship": "s/o"
+  },
+  "loan_details": {
+    "agreementDate": "1/8/2017",
+    "agreementNo": "RJJPSH01180",
+    "emiAmount": "82083",
+    "loanAmount": "3100000",
+    "tenure": "4 years"
+  },
+  "vehicle_details": {
+    "assetDescription": "AL-4923",
+    "chassisNo": "MBIUPDHDYHRBT6291",
+    "engineNo": "HBH2418840"
+  },
+  "financials": {
+    "total_due": "0",
+    "claim_amount": "0",
+    "cheque_bounces": [
+      {
+        "amount": "82608",
+        "bounceDate": "03-7-2019",
+        "chequeNo": "296"
+      },
+      {
+        "amount": "82850",
+        "bounceDate": "04-3-2019",
+        "chequeNo": "484650"
+      }
+    ]
+  },
+  "events": {
+    "repo_date": null,
+    "sale_date": null,
+    "sale_amount": "0"
+  }
+}

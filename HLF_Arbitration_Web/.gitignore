@@ -1,7 +1,13 @@
-# Secrets
-credentials/
-.env
-*.json
+
+# Secrets (Block specific files)
+credentials/*.json
+service-account-key.json
+*.env
+
+# Allow these (Safe project files)
+!package.json
+!tsconfig.json
+!package-lock.json
 
 # Python
 __pycache__/
