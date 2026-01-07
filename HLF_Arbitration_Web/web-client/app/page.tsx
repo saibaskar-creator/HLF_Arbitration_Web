@@ -15,7 +15,7 @@ export default function Home() {
 
   const handleSave = async (verifiedData: any) => {
     try {
-      const response = await fetch("http://localhost:8000/api/save-case", {
+      const response = await fetch("https://arbitration-backend-dev-919956120010.us-central1.run.app/api/save-case", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(verifiedData),

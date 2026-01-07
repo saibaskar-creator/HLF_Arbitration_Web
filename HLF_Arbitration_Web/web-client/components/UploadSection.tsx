@@ -31,7 +31,7 @@ export default function UploadSection({ onExtractionComplete }: UploadSectionPro
         }
 
         try {
-            const response = await fetch("http://localhost:8000/api/extract", {
+            const response = await fetch("https://arbitration-backend-dev-919956120010.us-central1.run.app/api/extract", {
                 method: "POST",
                 body: formData,
             });
@@ -139,8 +139,8 @@ export default function UploadSection({ onExtractionComplete }: UploadSectionPro
                     onClick={handleProcess}
                     disabled={loading || !agreementFile || !soaFile}
                     className={`px-8 py-3 rounded-full font-semibold text-white shadow-lg transition-all transform hover:scale-105 ${loading || !agreementFile || !soaFile
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                         }`}
                 >
                     {loading ? (

@@ -1,5 +1,5 @@
 Traceback (most recent call last):
-  File "C:\Users\SaibaskarP\HLF_Arbitration_Core\HLF_Arbitration_Web\backend\api\routes.py", line 88, in upload_and_extract
-    warnings.append("Failed to extract data from Agreement PDF. Please extract manually.")
-    ^^^^^^^^
+  File "C:\Users\SaibaskarP\HLF_Arbitration_Core\HLF_Arbitration_Web\backend\api\routes.py", line 114, in upload_and_extract
+    "warnings": warnings,
+                ^^^^^^^^
 NameError: name 'warnings' is not defined
