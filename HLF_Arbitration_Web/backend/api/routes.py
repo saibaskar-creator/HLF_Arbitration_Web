@@ -41,6 +41,9 @@ async def upload_and_extract(
                 shutil.copyfileobj(file.file, f)
             return path, safe_name
 
+        # Initialize warnings list
+        warnings = []
+
         # 1. Save Files
         # We assume file exists if passed (FastAPI validation)
         agr_path, agr_name = save_upload(agreement_file, "AGR")

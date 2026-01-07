@@ -114,7 +114,7 @@ export default function VerificationSplitView({
                                 Source: {data.file_urls[activeTab]}
                             </div>
                             <iframe
-                                src={`http://localhost:8000${data.file_urls[activeTab]}`}
+                                src={`https://arbitration-backend-dev-919956120010.us-central1.run.app${data.file_urls[activeTab]}`}
                                 className="flex-1 w-full h-full border-none"
                                 title="PDF Viewer"
                             />

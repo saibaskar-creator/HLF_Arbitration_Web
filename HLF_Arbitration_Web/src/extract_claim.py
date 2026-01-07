@@ -135,7 +135,6 @@ def extract_claim_data(pdf_path):
     print("🧠 Sending PDF to Gemini...")
     
     try:
-    try:
         response = generate_with_retry(model, pdf_bytes)
         
         try:
