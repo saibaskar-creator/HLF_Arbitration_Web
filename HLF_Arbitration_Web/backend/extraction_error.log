@@ -6,3 +6,5 @@ Agreement API Error: 404 Publisher Model `projects/arbitration-app-e16ce/locatio
 ❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 83 (char 82)
 ❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 163 (char 162)
 ❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 83 (char 82)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 163 (char 162)
+❌ JSON Parse Error: Expecting ',' delimiter: line 1 column 5668 (char 5667)
