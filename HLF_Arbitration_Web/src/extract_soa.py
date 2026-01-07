@@ -101,28 +101,27 @@ soa_schema = {
     "required": ["contractDetails", "customerInfo", "financials", "agingAnalysis"]
 }
 
-def clean_json_response(raw_text):
-    """Cleans markdown, fixes JSON syntax, and removes dangerous newlines."""
-    cleaned = raw_text.strip()
+def clean_and_parse_json(text):
+    """
+    Cleans Gemini output to ensure valid JSON parsing.
+    Removes Markdown backticks, handles 'json' labels, and finds the first/last braces.
+    """
+    # 1. Remove Markdown code blocks (```json ... ```)
+    text = re.sub(r"```json\s*", "", text)  # Remove opening ```json
+    text = re.sub(r"```\s*$", "", text)      # Remove closing ```
     
-    # Remove Markdown code blocks
-    if cleaned.startswith("```"):
-        cleaned = re.sub(r"^```(json)?", "", cleaned).strip()
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3].strip()
+    # 2. Strip leading/trailing whitespace
+    text = text.strip()
+    
+    # 3. Last Resort: Find the first '{' and last '}'
+    try:
+        start = text.index('{')
+        end = text.rindex('}') + 1
+        text = text[start:end]
+    except ValueError:
+        pass
 
-    # Find the first '{' and last '}'
-    start = cleaned.find('{')
-    end = cleaned.rfind('}')
-    
-    if start != -1 and end != -1:
-        cleaned = cleaned[start:end+1]
-
-    # FORCE REMOVE NEWLINES inside the string to prevent "Unterminated string" errors
-    cleaned = cleaned.replace('\n', ' ').replace('\r', ' ')
-    cleaned = re.sub(' +', ' ', cleaned)
-    
-    return cleaned
+    return json.loads(text)
 @retry(
     retry=retry_if_exception_type(ResourceExhausted),
     wait=wait_exponential(multiplier=2, min=4, max=60),
@@ -196,24 +195,20 @@ def extract_soa_data(pdf_path):
              print(msg)
              return None
              
-        cleaned_output = clean_json_response(response.text)
+        try:
+            # Use the cleaner function! 🧹
+            return clean_and_parse_json(response.text)
         
-        # DEBUG: Write the cleaned output to see why it fails
-        with open("debug_cleaned_soa.txt", "w", encoding="utf-8") as f:
-            f.write(cleaned_output)
+        except json.JSONDecodeError as e:
+            msg = f"❌ JSON Parse Error: {e}"
+            print(f"📄 Raw Output was: {response.text}")
+            with open("extraction_error.log", "a", encoding="utf-8") as f: f.write(msg + "\n")
             
-        return json.loads(cleaned_output)
-
-    except json.JSONDecodeError as e:
-        msg = f"❌ JSON Parse Error: {e}"
-        with open("extraction_error.log", "a", encoding="utf-8") as f: f.write(msg + "\n")
-        
-        # DUMP BAD JSON for inspection
-        with open("bad_json_soa.txt", "w", encoding="utf-8") as f:
-            f.write(response.text)
-            
-        print(msg)
-        return None
+            # DUMP BAD JSON for inspection
+            with open("bad_json_soa.txt", "w", encoding="utf-8") as f:
+                f.write(response.text)
+                
+            raise e
     except Exception as e:
         with open("extraction_error.log", "a", encoding="utf-8") as f:
              f.write(f"SOA API Error: {e}\n")

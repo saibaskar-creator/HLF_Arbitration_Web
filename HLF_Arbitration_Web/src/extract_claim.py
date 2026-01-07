@@ -75,20 +75,26 @@ claim_schema = {
     "required": ["meta", "entities", "agreementValueCalculation", "claimCalculation"]
 }
 
-def clean_json_response(raw_text):
-    cleaned = raw_text.strip()
-    if cleaned.startswith("```"):
-        cleaned = re.sub(r"^```(json)?", "", cleaned).strip()
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3].strip()
-        
-    start = cleaned.find('{')
-    end = cleaned.rfind('}')
-    if start != -1 and end != -1:
-        cleaned = cleaned[start:end+1]
+def clean_and_parse_json(text):
+    """
+    Cleans Gemini output to ensure valid JSON parsing.
+    """
+    # 1. Remove Markdown code blocks (```json ... ```)
+    text = re.sub(r"```json\s*", "", text)
+    text = re.sub(r"```\s*$", "", text)
+    
+    # 2. Strip leading/trailing whitespace
+    text = text.strip()
+    
+    # 3. Find the first '{' and last '}'
+    try:
+        start = text.index('{')
+        end = text.rindex('}') + 1
+        text = text[start:end]
+    except ValueError:
+        pass
 
-    cleaned = cleaned.replace('\n', ' ').replace('\r', ' ') 
-    return cleaned
+    return json.loads(text)
 
 @retry(
     retry=retry_if_exception_type(ResourceExhausted),
@@ -129,11 +135,16 @@ def extract_claim_data(pdf_path):
     print("🧠 Sending PDF to Gemini...")
     
     try:
+    try:
         response = generate_with_retry(model, pdf_bytes)
-        cleaned_output = clean_json_response(response.text)
         
-        # Parse and return structured data
-        data = json.loads(cleaned_output)
+        try:
+            # Parse and return structured data using cleaner
+            data = clean_and_parse_json(response.text)
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON Parse Error: {e}")
+            print(f"📄 Raw Output was: {response.text}")
+            raise e
         
         # Remap for the main pipeline to understand 'repoInfo' and 'saleInfo'
         # This keeps compatibility with your main_pipeline.py

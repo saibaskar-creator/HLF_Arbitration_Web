@@ -79,26 +79,28 @@ agreement_schema = {
     "required": ["agreementInfo", "borrower", "guarantor", "arbitration"]
 }
 
-def clean_json_response(raw_text):
-    """Cleans markdown, fixes JSON syntax, and removes dangerous newlines."""
-    cleaned = raw_text.strip()
-    # Remove Markdown code blocks
-    if cleaned.startswith("```"):
-        cleaned = re.sub(r"^```(json)?", "", cleaned).strip()
-    if cleaned.endswith("```"):
-        cleaned = cleaned[:-3].strip()
+def clean_and_parse_json(text):
+    """
+    Cleans Gemini output to ensure valid JSON parsing.
+    Removes Markdown backticks, handles 'json' labels, and finds the first/last braces.
+    """
+    # 1. Remove Markdown code blocks (```json ... ```)
+    text = re.sub(r"```json\s*", "", text)  # Remove opening ```json
+    text = re.sub(r"```\s*$", "", text)      # Remove closing ```
+    
+    # 2. Strip leading/trailing whitespace
+    text = text.strip()
+    
+    # 3. Last Resort: Find the first '{' and last '}'
+    # This ignores any "Here is your data:" text at the start
+    try:
+        start = text.index('{')
+        end = text.rindex('}') + 1
+        text = text[start:end]
+    except ValueError:
+        pass
 
-    # Find the first '{' and last '}'
-    start = cleaned.find('{')
-    end = cleaned.rfind('}')
-    
-    if start != -1 and end != -1:
-        cleaned = cleaned[start:end+1]
-    
-    # FORCE REMOVE NEWLINES to prevent "Unterminated string" errors
-    cleaned = cleaned.replace('\n', ' ').replace('\r', ' ')
-    cleaned = re.sub(' +', ' ', cleaned)
-    return cleaned
+    return json.loads(text)
 
 @retry(
     retry=retry_if_exception_type(ResourceExhausted),
@@ -174,14 +176,15 @@ def extract_agreement_data(pdf_path):
              print(msg)
              return None
              
-        cleaned_output = clean_json_response(response.text)
-        return json.loads(cleaned_output)
-
-    except json.JSONDecodeError as e:
-        msg = f"❌ JSON Parse Error: {e}"
-        with open("extraction_error.log", "a", encoding="utf-8") as f: f.write(msg + "\n")
-        print(msg)
-        return None
+        try:
+            # Use the cleaner function! 🧹
+            return clean_and_parse_json(response.text)
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON Parse Error: {e}")
+            print(f"📄 Raw Output was: {response.text}") # Log the bad output so we can see it
+            msg = f"❌ JSON Parse Error: {e}"
+            with open("extraction_error.log", "a", encoding="utf-8") as f: f.write(msg + "\n")
+            raise e # Re-raise so the frontend knows it failed
     except Exception as e:
         with open("extraction_error.log", "a", encoding="utf-8") as f:
             f.write(f"Agreement API Error: {e}\n")
