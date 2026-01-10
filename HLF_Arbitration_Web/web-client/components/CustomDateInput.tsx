@@ -81,6 +81,8 @@ export default function CustomDateInput({
                     type="button"
                     onClick={openDatePicker}
                     className="absolute right-2 text-gray-400 hover:text-blue-500 transition-colors"
+                    title="Select date"
+                    aria-label="Select date"
                 >
                     <Calendar size={18} />
                 </button>
@@ -94,6 +96,9 @@ export default function CustomDateInput({
                 value={toISODate(inputValue)}
                 className="absolute bottom-0 right-0 w-0 h-0 opacity-0 -z-10"
                 tabIndex={-1}
+                title="Date picker"
+                aria-label="Date picker"
+                aria-hidden="true"
             />
         </div>
     );

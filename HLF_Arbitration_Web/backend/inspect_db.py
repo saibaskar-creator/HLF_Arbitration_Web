@@ -38,8 +38,13 @@ def inspect_schema():
                     WHERE table_name = '{table_name}'
                 """)
                 cols = cur.fetchall()
-                for c in cols:
-                    print(f"      - {c[0]} ({c[1]}) {'NULL' if c[2]=='YES' else 'NOT NULL'}")
+                if cols:
+                    with open("schema.txt", "a", encoding="utf-8") as f:
+                        f.write(f"\nTABLE: {table_name}\n")
+                        for c in cols:
+                            f.write(f"  - {c[0]} ({c[1]}) {'NULL' if c[2]=='YES' else 'NOT NULL'}\n")
+                else:
+                     print(f"Skipping table {table_name}: No columns found.")
 
         cur.close()
         conn.close()
