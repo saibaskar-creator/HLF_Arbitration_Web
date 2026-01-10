@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Save, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { Save, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import CustomDateInput from "./CustomDateInput";
 
 interface VerificationSplitViewProps {
     data: any;
@@ -25,6 +26,56 @@ const setNestedValue = (obj: any, path: string, value: any) => {
     }
     current[parts[parts.length - 1]] = value;
     return newObj;
+};
+
+// Stateless components defined outside
+const SectionHeader = ({ title, id, isExpanded, onToggle }: { title: string, id: string, isExpanded: boolean, onToggle: (id: string) => void }) => (
+    <div
+        className="flex items-center justify-between bg-gray-100 p-3 rounded-t-lg cursor-pointer hover:bg-gray-200 transition-colors mt-6 border-b border-gray-200"
+        onClick={() => onToggle(id)}
+    >
+        <h3 className="font-bold text-gray-700">{title}</h3>
+        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+    </div>
+);
+
+const PureInputField = ({
+    label,
+    value,
+    onChange,
+    placeholder,
+    type = "text",
+    rows = 1
+}: {
+    label: string,
+    value: string,
+    onChange: (val: string) => void,
+    placeholder?: string,
+    type?: string,
+    rows?: number
+}) => {
+    return (
+        <div className="mb-2">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</label>
+            {rows > 1 ? (
+                <textarea
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder || label}
+                    rows={rows}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+            ) : (
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder || label}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+            )}
+        </div>
+    );
 };
 
 export default function VerificationSplitView({
@@ -51,44 +102,24 @@ export default function VerificationSplitView({
         setFormData((prev: any) => setNestedValue(prev, path, value));
     };
 
-    const InputField = ({ label, path, placeholder, type = "text", rows = 1 }: { label: string, path: string, placeholder?: string, type?: string, rows?: number }) => {
-        const value = getNestedValue(formData, path);
+    // Helpers to render fields cleaner
+    const field = (label: string, path: string, options: { rows?: number, type?: string, placeholder?: string } = {}) => (
+        <PureInputField
+            key={path}
+            label={label}
+            value={getNestedValue(formData, path)}
+            onChange={(val) => handleChange(path, val)}
+            {...options}
+        />
+    );
 
-        // Handle "N/A" or "null" strings gracefully for display if needed, 
-        // but generally we want to edit the raw value.
-
-        return (
-            <div className="mb-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</label>
-                {rows > 1 ? (
-                    <textarea
-                        value={value}
-                        onChange={(e) => handleChange(path, e.target.value)}
-                        placeholder={placeholder || label}
-                        rows={rows}
-                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                ) : (
-                    <input
-                        type={type}
-                        value={value}
-                        onChange={(e) => handleChange(path, e.target.value)}
-                        placeholder={placeholder || label}
-                        className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                )}
-            </div>
-        );
-    };
-
-    const SectionHeader = ({ title, id }: { title: string, id: string }) => (
-        <div
-            className="flex items-center justify-between bg-gray-100 p-3 rounded-t-lg cursor-pointer hover:bg-gray-200 transition-colors mt-6 border-b border-gray-200"
-            onClick={() => toggleSection(id)}
-        >
-            <h3 className="font-bold text-gray-700">{title}</h3>
-            {expandedSections[id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
+    const dateField = (label: string, path: string) => (
+        <CustomDateInput
+            key={path}
+            label={label}
+            value={getNestedValue(formData, path)}
+            onChange={(val) => handleChange(path, val)}
+        />
     );
 
     return (
@@ -158,85 +189,85 @@ export default function VerificationSplitView({
                     )}
 
                     {/* 1. CONTRACT DETAILS */}
-                    <SectionHeader title="Contract Information" id="contract" />
+                    <SectionHeader title="Contract Information" id="contract" isExpanded={expandedSections["contract"]} onToggle={toggleSection} />
                     {expandedSections["contract"] && (
                         <div className="p-4 grid grid-cols-2 gap-4 border border-t-0 rounded-b-lg border-gray-200 bg-white">
-                            <InputField label="Contract Number" path="contract_no" />
-                            <InputField label="Status (L/G)" path="soa.contractDetails.contractStatus" />
-                            <InputField label="Agreement Date" path="agreement.agreementInfo.agreementDate" />
-                            <InputField label="SOA Contract Date" path="soa.contractDetails.contractDate" />
-                            <InputField label="Tenure (Months)" path="soa.contractDetails.tenure" />
-                            <InputField label="Finance Rate (%)" path="soa.contractDetails.financeRate" />
+                            {field("Contract Number", "contract_no")}
+                            {field("Status (L/G)", "soa.contractDetails.contractStatus")}
+                            {dateField("Agreement Date", "agreement.agreementInfo.agreementDate")}
+                            {dateField("SOA Contract Date", "soa.contractDetails.contractDate")}
+                            {field("Tenure (Months)", "soa.contractDetails.tenure")}
+                            {field("Finance Rate (%)", "soa.contractDetails.financeRate")}
                         </div>
                     )}
 
                     {/* 2. ENTITIES */}
-                    <SectionHeader title="Entities (Respondents)" id="entities" />
+                    <SectionHeader title="Entities (Respondents)" id="entities" isExpanded={expandedSections["entities"]} onToggle={toggleSection} />
                     {expandedSections["entities"] && (
                         <div className="p-4 space-y-6 border border-t-0 rounded-b-lg border-gray-200 bg-white">
                             <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
                                 <h4 className="font-bold text-blue-800 mb-3 text-sm">Borrower</h4>
                                 <div className="grid grid-cols-1 gap-3">
-                                    <InputField label="Full Name" path="agreement.borrower.name" />
-                                    <InputField label="Address" path="agreement.borrower.address" rows={2} />
-                                    <InputField label="Communication Address (SOA)" path="soa.customerInfo.communicationAddress" rows={2} />
+                                    {field("Full Name", "agreement.borrower.name")}
+                                    {field("Address", "agreement.borrower.address", { rows: 2 })}
+                                    {field("Communication Address (SOA)", "soa.customerInfo.communicationAddress", { rows: 2 })}
                                 </div>
                             </div>
 
                             <div className="bg-purple-50 p-3 rounded-md border border-purple-100">
                                 <h4 className="font-bold text-purple-800 mb-3 text-sm">Co-Borrower</h4>
                                 <div className="grid grid-cols-1 gap-3">
-                                    <InputField label="Full Name" path="agreement.coBorrower.name" />
-                                    <InputField label="Address" path="agreement.coBorrower.address" rows={2} />
+                                    {field("Full Name", "agreement.coBorrower.name")}
+                                    {field("Address", "agreement.coBorrower.address", { rows: 2 })}
                                 </div>
                             </div>
 
                             <div className="bg-green-50 p-3 rounded-md border border-green-100">
                                 <h4 className="font-bold text-green-800 mb-3 text-sm">Guarantor</h4>
                                 <div className="grid grid-cols-1 gap-3">
-                                    <InputField label="Full Name" path="agreement.guarantor.name" />
-                                    <InputField label="Address" path="agreement.guarantor.address" rows={2} />
+                                    {field("Full Name", "agreement.guarantor.name")}
+                                    {field("Address", "agreement.guarantor.address", { rows: 2 })}
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* 3. ASSETS */}
-                    <SectionHeader title="Asset & Arbitration" id="assets" />
+                    <SectionHeader title="Asset & Arbitration" id="assets" isExpanded={expandedSections["assets"]} onToggle={toggleSection} />
                     {expandedSections["assets"] && (
                         <div className="p-4 space-y-4 border border-t-0 rounded-b-lg border-gray-200 bg-white">
                             <div className="grid grid-cols-2 gap-4">
-                                <InputField label="Product Model" path="soa.productInfo.productModel" />
-                                <InputField label="Vehicle No" path="soa.productInfo.vehicleNo" />
-                                <InputField label="Chassis No" path="soa.productInfo.chassisNo" />
-                                <InputField label="Engine No" path="soa.productInfo.engineNo" />
+                                {field("Product Model", "soa.productInfo.productModel")}
+                                {field("Vehicle No", "soa.productInfo.vehicleNo")}
+                                {field("Chassis No", "soa.productInfo.chassisNo")}
+                                {field("Engine No", "soa.productInfo.engineNo")}
                             </div>
                             <div className="border-t pt-4 grid grid-cols-2 gap-4">
-                                <InputField label="Arbitration Venue" path="agreement.arbitration.venue" />
+                                {field("Arbitration Venue", "agreement.arbitration.venue")}
                                 <div></div> {/* Spacer */}
-                                <InputField label="Proof Document" path="agreement.vehicleProof.documentName" />
-                                <InputField label="Proof Date" path="agreement.vehicleProof.documentDate" />
+                                {field("Proof Document", "agreement.vehicleProof.documentName")}
+                                {dateField("Proof Date", "agreement.vehicleProof.documentDate")}
                             </div>
                         </div>
                     )}
 
                     {/* 4. FINANCIALS */}
-                    <SectionHeader title="Financial Details" id="financials" />
+                    <SectionHeader title="Financial Details" id="financials" isExpanded={expandedSections["financials"]} onToggle={toggleSection} />
                     {expandedSections["financials"] && (
                         <div className="p-4 space-y-4 border border-t-0 rounded-b-lg border-gray-200 bg-white">
                             <div className="grid grid-cols-2 gap-4">
-                                <InputField label="Loan Amount" path="soa.financials.financeAmount" />
-                                <InputField label="EMI Amount" path="soa.financials.emiAmount" />
-                                <InputField label="Finance Charges" path="soa.financials.financeCharges" />
-                                <InputField label="Agreement Value" path="soa.financials.agreementValue" />
+                                {field("Loan Amount", "soa.financials.financeAmount")}
+                                {field("EMI Amount", "soa.financials.emiAmount")}
+                                {field("Finance Charges", "soa.financials.financeCharges")}
+                                {field("Agreement Value", "soa.financials.agreementValue")}
                             </div>
 
                             <div className="bg-gray-50 p-3 rounded mt-2">
                                 <h4 className="font-bold text-gray-700 text-xs mb-2 uppercase">Aging Analysis (SOA)</h4>
                                 <div className="grid grid-cols-3 gap-3">
-                                    <InputField label="Total Overdue" path="soa.agingAnalysis.totalOverdue" />
-                                    <InputField label="Current Month" path="soa.agingAnalysis.currentMonth" />
-                                    <InputField label="Future Month" path="soa.agingAnalysis.futureMonth" />
+                                    {field("Total Overdue", "soa.agingAnalysis.totalOverdue")}
+                                    {field("Current Month", "soa.agingAnalysis.currentMonth")}
+                                    {field("Future Month", "soa.agingAnalysis.futureMonth")}
                                 </div>
                             </div>
                         </div>
@@ -245,24 +276,24 @@ export default function VerificationSplitView({
                     {/* 5. CLAIM CALCULATION (If Available) */}
                     {data.claim && (
                         <>
-                            <SectionHeader title="Claim Calculation" id="claim" />
+                            <SectionHeader title="Claim Calculation" id="claim" isExpanded={expandedSections["claim"]} onToggle={toggleSection} />
                             {expandedSections["claim"] && (
                                 <div className="p-4 space-y-4 border border-t-0 rounded-b-lg border-gray-200 bg-white">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <InputField label="Total Receivable" path="claim.agreementValueCalculation.totalReceivable" />
-                                        <InputField label="Repo Date" path="claim.meta.repoDate" />
-                                        <InputField label="Sale Date" path="claim.meta.saleDate" />
-                                        <InputField label="Sale Amount" path="claim.claimCalculation.saleAmount" />
-                                        <InputField label="Paid by Borrower" path="claim.claimCalculation.paidByBorrower" />
-                                        <InputField label="Final Claim Amount" path="claim.claimCalculation.finalClaimAmount" />
+                                        {field("Total Receivable", "claim.agreementValueCalculation.totalReceivable")}
+                                        {dateField("Repo Date", "claim.meta.repoDate")}
+                                        {dateField("Sale Date", "claim.meta.saleDate")}
+                                        {field("Sale Amount", "claim.claimCalculation.saleAmount")}
+                                        {field("Paid by Borrower", "claim.claimCalculation.paidByBorrower")}
+                                        {field("Final Claim Amount", "claim.claimCalculation.finalClaimAmount")}
                                     </div>
                                     <div className="bg-red-50 p-3 rounded border border-red-100 mt-2">
                                         <h4 className="font-bold text-red-800 text-xs mb-2 uppercase">Charges</h4>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <InputField label="Cheque Return Charges" path="claim.claimCalculation.chequeReturnCharges" />
-                                            <InputField label="Repo Charges" path="claim.claimCalculation.repoCharges" />
-                                            <InputField label="Legal Charges" path="claim.claimCalculation.legalCharges" />
-                                            <InputField label="Additional Interest" path="claim.claimCalculation.additionalInterest" />
+                                            {field("Cheque Return Charges", "claim.claimCalculation.chequeReturnCharges")}
+                                            {field("Repo Charges", "claim.claimCalculation.repoCharges")}
+                                            {field("Legal Charges", "claim.claimCalculation.legalCharges")}
+                                            {field("Additional Interest", "claim.claimCalculation.additionalInterest")}
                                         </div>
                                     </div>
                                 </div>
